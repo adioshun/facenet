@@ -63,7 +63,7 @@ def main(args):
 
     np.random.seed(seed=args.seed)
     random.seed(args.seed)
-    train_set = facenet.get_dataset(args.data_dir)
+    train_set = facenet.get_dataset_from_lists(args.data_lsts)
     if args.filter_filename:
         train_set = filter_dataset(train_set, args.filter_filename, 
             args.filter_percentile, args.filter_min_nrof_images_per_class)
@@ -122,7 +122,7 @@ def main(args):
             images = []
             for filename in tf.unstack(filenames):
                 file_contents = tf.read_file(filename)
-                image = tf.image.decode_png(file_contents)
+                image = tf.image.decode_image(file_contents)
                 if args.random_rotate:
                     image = tf.py_func(facenet.random_rotate_image, [image], tf.uint8)
                 if args.random_crop:
@@ -389,7 +389,7 @@ def parse_arguments(argv):
         help='Upper bound on the amount of GPU memory that will be used by the process.', default=1.0)
     parser.add_argument('--pretrained_model', type=str,
         help='Load a pretrained model before training starts.')
-    parser.add_argument('--data_dir', type=str,
+    parser.add_argument('--data_lsts', type=str,
         help='Path to the data directory containing aligned face patches. Multiple directories are separated with colon.',
         default='~/datasets/facescrub/fs_aligned:~/datasets/casia/casia-webface-aligned')
     parser.add_argument('--model_def', type=str,

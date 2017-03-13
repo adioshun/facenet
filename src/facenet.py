@@ -321,22 +321,40 @@ class ImageClass():
   
     def __len__(self):
         return len(self.image_paths)
-  
-def get_dataset(paths):
+
+# def get_dataset(paths):
+#     dataset = []
+#     for path in paths.split(':'):
+#         path_exp = os.path.expanduser(path)
+#         classes = os.listdir(path_exp)
+#         classes.sort()
+#         nrof_classes = len(classes)
+#         for i in range(nrof_classes):
+#             class_name = classes[i]
+#             facedir = os.path.join(path_exp, class_name)
+#             if os.path.isdir(facedir):
+#                 images = os.listdir(facedir)
+#                 image_paths = [os.path.join(facedir,img) for img in images]
+#                 dataset.append(ImageClass(class_name, image_paths))
+#
+#     return dataset
+
+def get_dataset_from_lists(lists_paths):
+    from collections import OrderedDict as odict
     dataset = []
-    for path in paths.split(':'):
-        path_exp = os.path.expanduser(path)
-        classes = os.listdir(path_exp)
-        classes.sort()
-        nrof_classes = len(classes)
-        for i in range(nrof_classes):
-            class_name = classes[i]
-            facedir = os.path.join(path_exp, class_name)
-            if os.path.isdir(facedir):
-                images = os.listdir(facedir)
-                image_paths = [os.path.join(facedir,img) for img in images]
-                dataset.append(ImageClass(class_name, image_paths))
-  
+    for list_path in lists_paths.split(':'):
+        img_paths = sorted(open(list_path).read().splitlines())
+        user_names = map(lambda itm: os.path.dirname(itm), img_paths)
+        _content = odict()
+        for user_name, user_path in zip(user_names, img_paths):
+            if user_name not in _content:
+                _content[user_name] = []
+            _content[user_name].append(user_path)
+        for user_name in user_names:
+            _content[user_name].sort()
+        dataset.extend([ImageClass(class_name,
+                                   [os.path.join(os.path.dirname(list_path), img_path) for img_path in img_paths])
+                        for class_name, img_paths in _content.iteritems()])
     return dataset
 
 def split_dataset(dataset, split_ratio, mode):
